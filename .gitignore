@@ -1,0 +1,10 @@
+*.pyc
+input/movies_metadata.csv
+input/enwiki-latest-abstract.xml.gz
+input/enwiki-latest-abstract.xml
+input/test.csv
+input/output_test
+postgres_data/
+pgadmin_data/
+.idea/
+.DS_Store

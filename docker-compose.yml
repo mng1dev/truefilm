@@ -1,0 +1,47 @@
+version: '3'
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres_data:/data/postgres
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    volumes:
+      - ./pgadmin_data:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      - postgres
+  spark-master:
+    image: bde2020/spark-master:3.0.0-hadoop3.2
+    container_name: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+      - "4040:4040"
+    depends_on:
+      - postgres
+    environment:
+      INIT_DAEMON_STEP: setup_spark
+      PYSPARK_DRIVER_PYTHON: python3
+      PYSPARK_PYTHON: python3
+      PYSPARK_PACKAGES: 'com.databricks:spark-xml_2.12:0.10.0,org.postgresql:postgresql:42.2.16'
+      PYTHONPATH: '/spark/python:/spark/python/lib/py4j-0.10.9-src.zip'
+      SPARK_HOME: '/spark'
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_HOST: postgres_container
+    volumes:
+      - ./python:/app
+      - ./input:/input
